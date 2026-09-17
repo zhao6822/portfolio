@@ -14,6 +14,17 @@
     </style>
   </head>
   <body>
-    <script src="./sveltia-cms.mjs" type="module"></script>
+    <script>
+      // 提前告知 Sveltia：我们手动初始化（ES module 里 document.currentScript 为 null，自动初始化不会触发）
+      window.CMS_MANUAL_INIT = true;
+      // 注册 Service Worker：把 unpkg.com 的语言包/版本检查/chunks 请求改走本地文件
+      navigator.serviceWorker.register('./sw.js');
+    </script>
+    <script type="module">
+      // 等 Service Worker 接管页面后，再加载并手动初始化 Sveltia
+      await navigator.serviceWorker.ready;
+      const CMS = (await import('./sveltia-cms.mjs')).default;
+      CMS.init();
+    </script>
   </body>
 </html>
