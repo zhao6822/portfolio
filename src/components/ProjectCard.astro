@@ -1,0 +1,75 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+}
+
+const { project } = Astro.props;
+const { title, summary, period, role, status, tags, metrics, cover } = project.data;
+
+const statusStyle: Record<string, string> = {
+  进行中: 'bg-amber-50 text-amber-700 border-amber-200',
+  已交付: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  已归档: 'bg-zinc-100 text-zinc-600 border-zinc-200',
+};
+---
+
+<a
+  href={`/projects/${project.id}/`}
+  class="group flex flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white transition hover:border-zinc-300 hover:shadow-sm"
+>
+  {
+    cover && (
+      <div class="aspect-[16/9] w-full overflow-hidden bg-zinc-100">
+        <img
+          src={cover}
+          alt={title}
+          loading="lazy"
+          class="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+        />
+      </div>
+    )
+  }
+
+  <div class="flex flex-1 flex-col p-5">
+    <div class="flex items-start justify-between gap-3">
+      <h3 class="text-base font-semibold leading-snug">{title}</h3>
+      <span
+        class={`shrink-0 rounded-full border px-2 py-0.5 text-xs ${statusStyle[status]}`}
+        >{status}</span
+      >
+    </div>
+
+    <p class="mt-2 text-sm leading-relaxed text-zinc-600">{summary}</p>
+
+    {
+      metrics.length > 0 && (
+        <div class="mt-4 flex flex-wrap gap-x-6 gap-y-2">
+          {metrics.slice(0, 3).map((m) => (
+            <div>
+              <div class="text-sm font-semibold tabular-nums">{m.value}</div>
+              <div class="text-xs text-zinc-500">{m.label}</div>
+            </div>
+          ))}
+        </div>
+      )
+    }
+
+    <div class="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-4 text-xs text-zinc-500">
+      <span>{period}</span>
+      <span class="text-zinc-300">·</span>
+      <span>{role}</span>
+    </div>
+
+    {
+      tags.length > 0 && (
+        <div class="mt-3 flex flex-wrap gap-1.5">
+          {tags.map((t) => (
+            <span class="rounded-md bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600">{t}</span>
+          ))}
+        </div>
+      )
+    }
+  </div>
+</a>
