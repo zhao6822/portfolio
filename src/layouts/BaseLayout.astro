@@ -1,0 +1,65 @@
+---
+import '../styles/global.css';
+import { site } from '../site';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description = site.description } = Astro.props;
+const pageTitle = title ? `${title} — ${site.name}` : `${site.name} — ${site.title}`;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body class="bg-white text-zinc-900">
+    <header class="border-b border-zinc-200">
+      <div
+        class="mx-auto flex max-w-5xl items-center justify-between px-6 py-5"
+      >
+        <a href="/" class="text-base font-semibold tracking-tight hover:opacity-70">
+          {site.name}
+        </a>
+        <nav class="flex items-center gap-6 text-sm text-zinc-600">
+          <a href="/" class="hover:text-zinc-900">成果</a>
+          <a href="/tags" class="hover:text-zinc-900">标签</a>
+          <a href="/about" class="hover:text-zinc-900">关于</a>
+          <a
+            href="/admin/"
+            class="rounded-md border border-zinc-300 px-3 py-1.5 hover:bg-zinc-50"
+            >后台</a
+          >
+        </nav>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-5xl px-6 py-12">
+      <slot />
+    </main>
+
+    <footer class="mt-16 border-t border-zinc-200">
+      <div
+        class="mx-auto flex max-w-5xl flex-col gap-2 px-6 py-8 text-sm text-zinc-500 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <p>© {new Date().getFullYear()} {site.author}</p>
+        <div class="flex gap-4">
+          {
+            site.links.map((l) => (
+              <a href={l.url} class="hover:text-zinc-900" target="_blank" rel="noopener">
+                {l.name}
+              </a>
+            ))
+          }
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
