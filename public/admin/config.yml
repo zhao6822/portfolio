@@ -13,8 +13,6 @@ backend:
 media_folder: public/images
 public_folder: /images
 
-locale: zh_CN
-
 collections:
   - name: projects
     label: 项目成果
@@ -61,6 +59,8 @@ collections:
         required: false
         hint: 例：产品、品牌、数据。用于分类筛选
         field:
+          label: 标签
+          name: tag
           widget: string
       - label: 成果数据
         name: metrics
@@ -68,6 +68,8 @@ collections:
         required: false
         hint: 尽量填具体数字，这是作品集里最有说服力的部分
         field:
+          label: 一条数据
+          name: metric
           widget: object
           fields:
             - label: 名称
@@ -83,6 +85,8 @@ collections:
         widget: list
         required: false
         field:
+          label: 一个链接
+          name: link
           widget: object
           fields:
             - label: 名称
