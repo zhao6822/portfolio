@@ -2,6 +2,7 @@ backend:
   name: github
   repo: zhao6822/portfolio
   branch: main
+  base_url: https://zhaopeng-portfolio.pages.dev
   auth_endpoint: /api/auth
   commit_messages:
     create: '新增成果：{{fields.title}}'
