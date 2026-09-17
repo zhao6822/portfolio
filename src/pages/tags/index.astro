@@ -1,0 +1,40 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const all = await getCollection('projects');
+const projects = all.filter((p) => !p.data.draft);
+
+const tagCount = new Map<string, number>();
+for (const p of projects) {
+  for (const t of p.data.tags) {
+    tagCount.set(t, (tagCount.get(t) ?? 0) + 1);
+  }
+}
+const tags = [...tagCount.entries()].sort((a, b) => b[1] - a[1]);
+---
+
+<BaseLayout title="标签">
+  <h1 class="text-2xl font-semibold tracking-tight">标签</h1>
+  <p class="mt-2 text-sm text-zinc-500">共 {tags.length} 个标签</p>
+
+  {
+    tags.length === 0 ? (
+      <div class="mt-10 rounded-xl border border-dashed border-zinc-300 p-12 text-center">
+        <p class="text-sm text-zinc-500">还没有标签。给项目加上标签后会出现在这里。</p>
+      </div>
+    ) : (
+      <div class="mt-8 flex flex-wrap gap-2.5">
+        {tags.map(([tag, count]) => (
+          <a
+            href={`/tags/${encodeURIComponent(tag)}/`}
+            class="rounded-lg border border-zinc-200 px-4 py-2 text-sm text-zinc-700 transition hover:border-zinc-400 hover:bg-zinc-50"
+          >
+            {tag}
+            <span class="ml-1.5 text-xs text-zinc-400">{count}</span>
+          </a>
+        ))}
+      </div>
+    )
+  }
+</BaseLayout>
