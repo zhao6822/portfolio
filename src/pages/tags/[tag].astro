@@ -1,0 +1,39 @@
+---
+import { getCollection } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+
+export async function getStaticPaths() {
+  const all = await getCollection('projects');
+  const projects = all.filter((p) => !p.data.draft);
+  const tags = [...new Set(projects.flatMap((p) => p.data.tags))];
+
+  return tags.map((tag) => ({
+    params: { tag },
+    props: {
+      tag,
+      projects: projects
+        .filter((p) => p.data.tags.includes(tag))
+        .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf()),
+    },
+  }));
+}
+
+interface Props {
+  tag: string;
+  projects: CollectionEntry<'projects'>[];
+}
+
+const { tag, projects } = Astro.props;
+---
+
+<BaseLayout title={`标签：${tag}`}>
+  <a href="/tags" class="text-sm text-zinc-500 hover:text-zinc-900">← 所有标签</a>
+  <h1 class="mt-4 text-2xl font-semibold tracking-tight">{tag}</h1>
+  <p class="mt-2 text-sm text-zinc-500">共 {projects.length} 个项目</p>
+
+  <div class="mt-8 grid gap-5 sm:grid-cols-2">
+    {projects.map((p) => <ProjectCard project={p} />)}
+  </div>
+</BaseLayout>
