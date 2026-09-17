@@ -1,4 +1,7 @@
-// 把 Sveltia CMS 的 unpkg.com 运行时请求全部改走本地文件，国内网络不再卡死
+// 把 Sveltia CMS 依赖的外部服务全部改走本地/自有服务，国内网络不再卡死：
+// - unpkg.com（语言包 / 版本检查 / chunks）→ 本地文件
+// - cdn.jsdelivr.net（字体）→ 本地字体
+// - api.github.com（读写仓库，国内不稳定）→ 本站 Cloudflare Functions 反向代理
 const VERSION = '0.213.5';
 
 self.addEventListener('install', () => self.skipWaiting());
@@ -12,7 +15,8 @@ self.addEventListener('fetch', (event) => {
   const isUnpkg = url.hostname === 'unpkg.com' && url.pathname.startsWith('/@sveltia/cms');
   const isFont =
     url.hostname === 'cdn.jsdelivr.net' && url.pathname.startsWith('/fontsource/fonts/');
-  if (!isUnpkg && !isFont) return;
+  const isGhApi = url.hostname === 'api.github.com';
+  if (!isUnpkg && !isFont && !isGhApi) return;
 
   const tag = (res) => {
     const headers = new Headers(res.headers);
@@ -20,6 +24,13 @@ self.addEventListener('fetch', (event) => {
     return new Response(res.body, { status: res.status, headers });
   };
   const path = url.pathname;
+
+  // GitHub API → 本站反向代理（保存认证头与请求体）
+  if (isGhApi) {
+    const proxied = new Request(`/api/gh${path}${url.search}`, event.request);
+    event.respondWith(fetch(proxied).then(tag));
+    return;
+  }
 
   // 语言包 → /admin/locales/
   if (path.includes('/locales/')) {
@@ -49,15 +60,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 字体 → 本地 fonts/
-  if (url.hostname === 'cdn.jsdelivr.net' && path.startsWith('/fontsource/fonts/')) {
+  // 字体 → 本地 fonts/（仅 jsdelivr fontsource 路径，其余放行走原网络）
+  if (isFont) {
     const name = path.replace('/fontsource/fonts/', '').replace(/[:@]/g, '_').replace(/\//g, '_');
     event.respondWith(
       fetch(`/admin/fonts/${name}`)
         .then(tag)
         .catch(() => new Response('', { status: 404 })),
     );
-    return;
   }
 
   void VERSION;
