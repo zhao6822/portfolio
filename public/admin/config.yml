@@ -1,0 +1,107 @@
+backend:
+  name: github
+  repo: zhao6822/portfolio
+  branch: main
+  auth_endpoint: /api/auth
+  commit_messages:
+    create: '新增成果：{{fields.title}}'
+    update: '更新成果：{{fields.title}}'
+    delete: '删除成果：{{fields.title}}'
+    uploadMedia: '上传图片：{{path}}'
+    deleteMedia: '删除图片：{{path}}'
+
+media_folder: public/images
+public_folder: /images
+
+locale: zh_CN
+
+collections:
+  - name: projects
+    label: 项目成果
+    folder: src/content/projects
+    create: true
+    extension: md
+    format: frontmatter
+    slug: '{{slug}}'
+    summary: '{{title}}'
+    fields:
+      - label: 标题
+        name: title
+        widget: string
+      - label: 一句话成果
+        name: summary
+        widget: text
+        hint: 一句话说清这个项目做成了什么，会显示在列表卡片上
+      - label: 日期
+        name: date
+        widget: datetime
+        format: YYYY-MM-DD
+        date_format: YYYY-MM-DD
+        time_format: false
+        hint: 用于排序和按年份分组，一般填项目结束的月份
+      - label: 起止时间
+        name: period
+        widget: string
+        hint: 例：2026.03 – 2026.06
+      - label: 我的角色
+        name: role
+        widget: string
+        hint: 例：项目负责人 / 独立执行 / 设计支持
+      - label: 状态
+        name: status
+        widget: select
+        options:
+          - 进行中
+          - 已交付
+          - 已归档
+        default: 已交付
+      - label: 标签
+        name: tags
+        widget: list
+        required: false
+        hint: 例：产品、品牌、数据。用于分类筛选
+        field:
+          widget: string
+      - label: 成果数据
+        name: metrics
+        widget: list
+        required: false
+        hint: 尽量填具体数字，这是作品集里最有说服力的部分
+        field:
+          widget: object
+          fields:
+            - label: 名称
+              name: label
+              widget: string
+              hint: 例：转化率
+            - label: 数值
+              name: value
+              widget: string
+              hint: 例：+18%
+      - label: 相关链接
+        name: links
+        widget: list
+        required: false
+        field:
+          widget: object
+          fields:
+            - label: 名称
+              name: name
+              widget: string
+            - label: 地址
+              name: url
+              widget: string
+      - label: 封面图
+        name: cover
+        widget: image
+        required: false
+        hint: 建议 16:9 横图，不填也能发布
+      - label: 草稿
+        name: draft
+        widget: boolean
+        default: false
+        hint: 勾上则不会显示在网站上，方便先写一半存着
+      - label: 正文
+        name: body
+        widget: markdown
+        hint: 建议按「背景 / 我做了什么 / 结果与复盘」三段写
