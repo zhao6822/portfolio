@@ -9,7 +9,10 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
-  if (url.hostname !== 'unpkg.com' || !url.pathname.startsWith('/@sveltia/cms')) return;
+  const isUnpkg = url.hostname === 'unpkg.com' && url.pathname.startsWith('/@sveltia/cms');
+  const isFont =
+    url.hostname === 'cdn.jsdelivr.net' && url.pathname.startsWith('/fontsource/fonts/');
+  if (!isUnpkg && !isFont) return;
 
   const tag = (res) => {
     const headers = new Headers(res.headers);
@@ -40,6 +43,17 @@ self.addEventListener('fetch', (event) => {
   if (chunkMatch) {
     event.respondWith(
       fetch(`/admin/chunks/${chunkMatch[1]}`)
+        .then(tag)
+        .catch(() => new Response('', { status: 404 })),
+    );
+    return;
+  }
+
+  // 字体 → 本地 fonts/
+  if (url.hostname === 'cdn.jsdelivr.net' && path.startsWith('/fontsource/fonts/')) {
+    const name = path.replace('/fontsource/fonts/', '').replace(/[:@]/g, '_').replace(/\//g, '_');
+    event.respondWith(
+      fetch(`/admin/fonts/${name}`)
         .then(tag)
         .catch(() => new Response('', { status: 404 })),
     );
