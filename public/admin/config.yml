@@ -4,6 +4,8 @@ backend:
   branch: main
   base_url: https://zhaopeng-portfolio.pages.dev
   auth_endpoint: /api/auth
+  api_root: https://zhaopeng-portfolio.pages.dev/api/gh
+  graphql_api_root: https://zhaopeng-portfolio.pages.dev/api/gh/graphql
   commit_messages:
     create: '新增成果：{{fields.title}}'
     update: '更新成果：{{fields.title}}'
