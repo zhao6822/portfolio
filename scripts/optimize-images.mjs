@@ -8,7 +8,8 @@
  *
  * 安全：只处理 public/images；压出来更小才覆盖；sharp 不存在时直接跳过。
  */
-import { readdir, readFile, writeFile, stat, rename } from 'node:fs/promises';
+import { readdir, readFile, writeFile, stat, rename, unlink, access } from 'node:fs/promises';
+import { constants as FS } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -22,6 +23,18 @@ const START_QUALITY = 82;
 const MIN_QUALITY = 58;
 
 const require = createRequire(import.meta.url);
+
+const exists = async (p) => {
+  try {
+    await access(p, FS.F_OK);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const SMALL_WIDTH = 800; // 列表卡片实际只显示 500px 左右，800 足够（含 1.5 倍屏）
+const SMALL_LIMIT = 150 * 1024;
 
 /**
  * sharp 是 astro 的可选依赖，用 pnpm 安装时它藏在 astro 自己的依赖目录里，
@@ -128,6 +141,29 @@ for (const file of targets) {
   } else {
     console.log(`[images] ${file}: 压完没变小，保留原图`);
     totalAfter += before.size;
+  }
+
+  // 再生成一张小图给列表卡片用（卡片只有 500px 宽，没必要加载 1600px 的）
+  const smallName = file.replace(/\.(jpe?g|png)$/i, (ext) => `-${SMALL_WIDTH}${ext}`);
+  const smallPath = path.join(IMG_DIR, smallName);
+  if ((meta.width ?? 0) > SMALL_WIDTH + 100) {
+    let q = isPng ? 85 : 80;
+    let smallBuf;
+    while (true) {
+      const pipeline = sharp(input, { failOn: 'none' })
+        .rotate()
+        .resize({ width: SMALL_WIDTH, withoutEnlargement: true });
+      smallBuf = await (isPng
+        ? pipeline.png({ quality: q, compressionLevel: 9, effort: 6, palette: true })
+        : pipeline.jpeg({ quality: q, mozjpeg: true, progressive: true })
+      ).toBuffer();
+      if (smallBuf.length <= SMALL_LIMIT || q <= MIN_QUALITY) break;
+      q -= 8;
+    }
+    await writeFile(smallPath, smallBuf);
+    console.log(`[images] + ${smallName}: ${(smallBuf.length / 1024).toFixed(0)}KB（列表卡片用）`);
+  } else if (await exists(smallPath)) {
+    await unlink(smallPath);
   }
 }
 
