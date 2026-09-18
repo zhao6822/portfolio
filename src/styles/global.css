@@ -4,6 +4,18 @@
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, 'Segoe UI', 'PingFang SC',
     'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+
+  /* 墨绿主题色 */
+  --color-ink-50: #f2f7f4;
+  --color-ink-100: #e2efe8;
+  --color-ink-200: #c6dfd2;
+  --color-ink-300: #9bc7af;
+  --color-ink-400: #66a584;
+  --color-ink-500: #3f8365;
+  --color-ink-600: #2c6b52;
+  --color-ink-700: #245a46;
+  --color-ink-800: #1e4a3b;
+  --color-ink-900: #14352a;
 }
 
 html {
@@ -54,8 +66,22 @@ body {
 }
 
 .prose-custom a {
+  color: var(--color-ink-700);
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+.prose-custom a:hover {
+  color: var(--color-ink-900);
+}
+
+.prose-custom blockquote {
+  border-left-color: var(--color-ink-300);
+}
+
+::selection {
+  background: var(--color-ink-200);
+  color: var(--color-ink-900);
 }
 
 .prose-custom img {
