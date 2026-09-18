@@ -102,7 +102,7 @@ collections:
         name: cover
         widget: image
         required: false
-        hint: 建议 16:9 横图，不填也能发布
+        hint: 建议 16:9 横图。手机/微信原图也能直接传，网站会自动压缩；传完要等 1–3 分钟网站重新生成后才会显示出来
       - label: 草稿
         name: draft
         widget: boolean
