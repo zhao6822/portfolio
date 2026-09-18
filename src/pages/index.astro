@@ -113,8 +113,8 @@ const yearText =
           <div class="grid gap-5 sm:grid-cols-2">
             {projects
               .filter((p) => p.data.date.getFullYear() === year)
-              .map((p) => (
-                <ProjectCard project={p} />
+              .map((p, i) => (
+                <ProjectCard project={p} priority={i < 2} />
               ))}
           </div>
         </section>
