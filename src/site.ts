@@ -23,6 +23,10 @@ export const site = {
 
   email: 'zhaopeng6822@qq.com',
 
+  // 访问统计（Cloudflare Web Analytics）。想知道有没有人看过你的作品集就留着，
+  // 不想统计了就把引号里的内容清空，写成 '' 即可。
+  analyticsToken: '4703ff56134b4c1f9eb5177ba1ebbe55',
+
   // 外部链接，例：{ name: 'GitHub', url: 'https://github.com/你的用户名' }
   links: [] as { name: string; url: string }[],
 };
