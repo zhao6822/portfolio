@@ -104,10 +104,34 @@ const shareTitle = ogTitle ?? pageTitle;
               </a>
             ))
           }
+          <span id="visit-count" class="hidden items-center gap-1.5" title="本站累计访问次数">
+            <span class="h-1.5 w-1.5 rounded-full bg-ink-500"></span>
+            累计访问 <span id="visit-total">0</span> 次
+          </span>
           <a href="/about" class="hover:text-ink-700 sm:hidden">关于</a>
           <a href="/admin/" class="text-zinc-400 hover:text-ink-700">后台</a>
         </div>
       </div>
     </footer>
+
+    <script is:inline>
+      // 底部访问计数：拿到数字才显示，拿不到就整块不出现，页面不会留个「0 次」
+      (function () {
+        var box = document.getElementById('visit-count');
+        var num = document.getElementById('visit-total');
+        if (!box || !num) return;
+        fetch('/api/hit')
+          .then(function (r) {
+            return r.json();
+          })
+          .then(function (d) {
+            if (!d || !d.ok || typeof d.total !== 'number') return;
+            num.textContent = d.total.toLocaleString('zh-CN');
+            box.classList.remove('hidden');
+            box.classList.add('inline-flex');
+          })
+          .catch(function () {});
+      })();
+    </script>
   </body>
 </html>
