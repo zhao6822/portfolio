@@ -19,6 +19,9 @@
         color: #3f3f46;
         border: 1px solid #e4e4e7;
         border-radius: 12px;
+        background: #fff;
+        position: relative;
+        z-index: 9999;
       }
       .admin-fallback h2 {
         font-size: 18px;
@@ -60,9 +63,19 @@
       window.addEventListener('unhandledrejection', function (e) {
         window.__adminDiag.errors.push('promise: ' + String(e.reason && e.reason.message ? e.reason.message : e.reason));
       });
+
       // 注册 Service Worker：把 unpkg / jsdelivr / api.github.com 的请求改走本地或本站代理
       try {
         navigator.serviceWorker.register('./sw.js');
+        // 新版小程序接管页面时自动刷新一次，确保所有请求都走最新规则
+        navigator.serviceWorker.addEventListener('controllerchange', function () {
+          try {
+            if (!sessionStorage.getItem('admin-sw-reloaded')) {
+              sessionStorage.setItem('admin-sw-reloaded', '1');
+              location.reload();
+            }
+          } catch (e) {}
+        });
       } catch (e) {
         window.__adminDiag.errors.push('sw-register: ' + String(e));
       }
@@ -91,87 +104,126 @@
       })();
     </script>
     <script>
-      // 兜底：8 秒后界面还没出来，就显示诊断信息，不留白屏
-      setTimeout(async function () {
-        if (document.querySelector('.app-shell')) return;
-        if (document.querySelector('.admin-fallback')) return;
-
-        var diag = window.__adminDiag || {};
-        var lines = [];
-        lines.push('网络在线: ' + navigator.onLine);
-        lines.push('浏览器: ' + navigator.userAgent.slice(0, 90));
-        lines.push('小程序支持: ' + ('serviceWorker' in navigator));
-        try {
-          var regs = await navigator.serviceWorker.getRegistrations();
-          var reg = regs.find(function (r) {
-            return r.active;
-          });
-          lines.push('小程序状态: ' + (reg ? reg.active.state : '无'));
-        } catch (e) {
-          lines.push('小程序状态: 查询失败 ' + e);
-        }
-        try {
-          var resp = await fetch('./sveltia-cms.mjs', { headers: { range: 'bytes=0-99' } });
-          lines.push('主脚本可达: HTTP ' + resp.status);
-        } catch (e) {
-          lines.push('主脚本可达: 失败 ' + e);
-        }
-        lines.push('主脚本已执行: ' + (diag.moduleLoaded === true ? '是' : diag.moduleLoaded === undefined ? '未完成' : '否'));
-        lines.push('错误: ' + (diag.errors && diag.errors.length ? diag.errors.join(' | ') : '（无捕获到错误）'));
-        var report = lines.join('\n');
-
-        document.body.insertAdjacentHTML(
-          'beforeend',
-          '<div class="admin-fallback">' +
-            '<h2>后台没能加载出来</h2>' +
-            '<p>点「强制重新加载」先试一次；如果反复出现，请点「复制诊断信息」把内容粘贴给阿岩。</p>' +
-            '<pre id="admin-diag-text">' + report.replace(/</g, '&lt;') + '</pre>' +
-            '<button type="button" id="admin-hard-reload">强制重新加载</button>' +
-            '<button type="button" class="gray" id="admin-copy-diag">复制诊断信息</button>' +
-            '</div>',
-        );
-
-        document.getElementById('admin-hard-reload').addEventListener('click', function () {
-          var done = function () {
-            location.reload(true);
-          };
-          if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
-            navigator.serviceWorker
-              .getRegistrations()
-              .then(function (regs) {
-                regs.forEach(function (r) {
-                  r.unregister();
-                });
+      (function () {
+        // ---------- 通用工具 ----------
+        function buildDiagText(extra) {
+          var diag = window.__adminDiag || {};
+          var lines = [];
+          lines.push('页面地址: ' + location.href);
+          lines.push('网络在线: ' + navigator.onLine);
+          lines.push('浏览器: ' + navigator.userAgent.slice(0, 90));
+          lines.push('小程序支持: ' + ('serviceWorker' in navigator));
+          return navigator.serviceWorker && navigator.serviceWorker.getRegistrations
+            ? navigator.serviceWorker.getRegistrations().then(function (regs) {
+                var reg = null;
+                for (var i = 0; i < regs.length; i++) {
+                  if (regs[i].active) reg = regs[i];
+                }
+                lines.push('小程序状态: ' + (reg ? reg.active.state : '无'));
+                return fetch('./sveltia-cms.mjs', { headers: { range: 'bytes=0-99' } });
+              }).then(function (resp) {
+                lines.push('主脚本可达: HTTP ' + resp.status);
+              }, function (e) {
+                lines.push('主脚本可达: 失败 ' + e);
+              }).then(function () {
+                lines.push('主脚本已执行: ' + (diag.moduleLoaded === true ? '是' : diag.moduleLoaded === undefined ? '未完成' : '否'));
+                lines.push('错误: ' + (diag.errors && diag.errors.length ? diag.errors.join(' | ') : '（无捕获到错误）'));
+                if (extra) lines.push(extra);
+                return lines.join('\n');
               })
-              .then(done, done);
-          } else {
-            done();
-          }
-        });
-        document.getElementById('admin-copy-diag').addEventListener('click', function () {
-          var text = document.getElementById('admin-diag-text').textContent;
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(text);
-          } else {
-            var ta = document.createElement('textarea');
-            ta.value = text;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            ta.remove();
-          }
-          this.textContent = '已复制';
-        });
+            : Promise.resolve(lines.join('\n'));
+        }
 
-        // 界面若在提示卡出现之后才加载完成，自动撤掉提示卡
-        var watchdog = setInterval(function () {
-          if (document.querySelector('.app-shell')) {
-            var card = document.querySelector('.admin-fallback');
-            if (card) card.remove();
-            clearInterval(watchdog);
+        function showCard(title, intro, extraDiag) {
+          if (document.querySelector('.admin-fallback')) return;
+          return buildDiagText(extraDiag).then(function (report) {
+            document.body.insertAdjacentHTML(
+              'beforeend',
+              '<div class="admin-fallback">' +
+                '<h2>' + title + '</h2>' +
+                '<p>' + intro + '</p>' +
+                '<pre id="admin-diag-text">' + report.replace(/</g, '&lt;') + '</pre>' +
+                '<button type="button" id="admin-hard-reload">清除登录信息并重试</button>' +
+                '<button type="button" class="gray" id="admin-copy-diag">复制诊断信息</button>' +
+                '</div>',
+            );
+            document.getElementById('admin-hard-reload').addEventListener('click', function () {
+              try {
+                localStorage.clear();
+                sessionStorage.removeItem('admin-sw-reloaded');
+              } catch (e) {}
+              var done = function () {
+                location.reload(true);
+              };
+              if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+                navigator.serviceWorker
+                  .getRegistrations()
+                  .then(function (regs) {
+                    regs.forEach(function (r) {
+                      r.unregister();
+                    });
+                  })
+                  .then(done, done);
+              } else {
+                done();
+              }
+            });
+            document.getElementById('admin-copy-diag').addEventListener('click', function () {
+              var text = document.getElementById('admin-diag-text').textContent;
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text);
+              } else {
+                var ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                ta.remove();
+              }
+              this.textContent = '已复制';
+            });
+            // 界面恢复正常后自动撤掉卡片
+            var watchdog = setInterval(function () {
+              var text = document.body.innerText || '';
+              if (document.querySelector('.app-shell') && text.indexOf('登录中') === -1) {
+                var card = document.querySelector('.admin-fallback');
+                if (card) card.remove();
+                clearInterval(watchdog);
+              }
+            }, 1000);
+          });
+        }
+
+        // ---------- 监控 1：界面 8 秒没出来 ----------
+        setTimeout(function () {
+          if (document.querySelector('.app-shell')) return;
+          showCard(
+            '后台没能加载出来',
+            '点「清除登录信息并重试」试一次；如果反复出现，请点「复制诊断信息」把内容粘贴给阿岩。',
+          );
+        }, 8000);
+
+        // ---------- 监控 2：「登录中」卡住超过 25 秒 ----------
+        var loginStuckSince = null;
+        setInterval(function () {
+          var text = document.body.innerText || '';
+          var loggingIn = text.indexOf('登录中') !== -1 || /logging in/i.test(text);
+          if (loggingIn && document.querySelector('.app-shell')) {
+            if (!loginStuckSince) {
+              loginStuckSince = Date.now();
+            } else if (Date.now() - loginStuckSince > 25000) {
+              loginStuckSince = null;
+              showCard(
+                '登录卡住了',
+                '多半是浏览器还在用旧的请求通道，或保存的登录信息已失效。点下面的按钮清掉重来，然后重新点「使用 GitHub 登录」。',
+                '卡住时长: 超过 25 秒',
+              );
+            }
+          } else {
+            loginStuckSince = null;
           }
         }, 1000);
-      }, 8000);
+      })();
     </script>
   </body>
 </html>
