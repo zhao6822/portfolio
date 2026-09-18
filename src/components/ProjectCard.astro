@@ -1,4 +1,6 @@
 ---
+import { existsSync } from 'node:fs';
+import path from 'node:path';
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
@@ -17,6 +19,13 @@ const statusStyle: Record<string, string> = {
 };
 
 const firstChar = (title || '?').trim().charAt(0);
+
+// 构建时如果生成了 800px 的小图，列表卡片就只加载小图（142KB 而不是 292KB）
+const smallCover = cover ? cover.replace(/\.(jpe?g|png)$/i, (ext) => `-800${ext}`) : '';
+const hasSmall =
+  !!smallCover &&
+  smallCover !== cover &&
+  existsSync(path.join(process.cwd(), 'public', smallCover.replace(/^\//, '')));
 ---
 
 <a
@@ -27,7 +36,9 @@ const firstChar = (title || '?').trim().charAt(0);
     cover ? (
       <div class="aspect-[16/9] w-full overflow-hidden bg-ink-50">
         <img
-          src={cover}
+          src={hasSmall ? smallCover : cover}
+          srcset={hasSmall ? `${smallCover} 800w, ${cover} 1600w` : undefined}
+          sizes={hasSmall ? '(min-width: 640px) 480px, 100vw' : undefined}
           alt={title}
           loading={priority ? 'eager' : 'lazy'}
           fetchpriority={priority ? 'high' : 'auto'}
