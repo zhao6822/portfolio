@@ -24,7 +24,7 @@ const { title, summary, period, role, status, tags, metrics, links, cover } =
 
 const statusStyle: Record<string, string> = {
   进行中: 'bg-amber-50 text-amber-700 border-amber-200',
-  已交付: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  已交付: 'bg-ink-50 text-ink-700 border-ink-200',
   已归档: 'bg-zinc-100 text-zinc-600 border-zinc-200',
 };
 ---
@@ -61,9 +61,9 @@ const statusStyle: Record<string, string> = {
       metrics.length > 0 && (
         <section class="mt-8 grid gap-4 sm:grid-cols-3">
           {metrics.map((m) => (
-            <div class="rounded-xl border border-zinc-200 bg-zinc-50 p-5">
-              <div class="text-2xl font-semibold tabular-nums">{m.value}</div>
-              <div class="mt-1 text-sm text-zinc-600">{m.label}</div>
+            <div class="rounded-xl border border-ink-100 bg-ink-50 p-5">
+              <div class="text-2xl font-semibold tabular-nums text-ink-900">{m.value}</div>
+              <div class="mt-1 text-sm text-ink-700">{m.label}</div>
             </div>
           ))}
         </section>
@@ -89,7 +89,7 @@ const statusStyle: Record<string, string> = {
               {tags.map((t) => (
                 <a
                   href={`/tags/${encodeURIComponent(t)}/`}
-                  class="rounded-md bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 hover:bg-zinc-200"
+                  class="rounded-md bg-ink-50 px-2 py-0.5 text-xs text-ink-700 hover:bg-ink-100"
                 >
                   {t}
                 </a>
