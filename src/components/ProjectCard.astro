@@ -3,9 +3,11 @@ import type { CollectionEntry } from 'astro:content';
 
 interface Props {
   project: CollectionEntry<'projects'>;
+  /** 首屏可见的卡片传 true：立刻加载，不用等滚动 */
+  priority?: boolean;
 }
 
-const { project } = Astro.props;
+const { project, priority = false } = Astro.props;
 const { title, summary, period, role, status, tags, metrics, cover } = project.data;
 
 const statusStyle: Record<string, string> = {
@@ -23,11 +25,13 @@ const firstChar = (title || '?').trim().charAt(0);
 >
   {
     cover ? (
-      <div class="aspect-[16/9] w-full overflow-hidden bg-zinc-100">
+      <div class="aspect-[16/9] w-full overflow-hidden bg-ink-50">
         <img
           src={cover}
           alt={title}
-          loading="lazy"
+          loading={priority ? 'eager' : 'lazy'}
+          fetchpriority={priority ? 'high' : 'auto'}
+          decoding="async"
           class="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
         />
       </div>
