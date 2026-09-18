@@ -28,7 +28,7 @@ const tags = [...tagCount.entries()].sort((a, b) => b[1] - a[1]);
         {tags.map(([tag, count]) => (
           <a
             href={`/tags/${encodeURIComponent(tag)}/`}
-            class="rounded-lg border border-zinc-200 px-4 py-2 text-sm text-zinc-700 transition hover:border-zinc-400 hover:bg-zinc-50"
+            class="rounded-lg border border-zinc-200 px-4 py-2 text-sm text-zinc-700 transition hover:border-ink-300 hover:bg-ink-50 hover:text-ink-800"
           >
             {tag}
             <span class="ml-1.5 text-xs text-zinc-400">{count}</span>
