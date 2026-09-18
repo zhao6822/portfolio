@@ -29,9 +29,9 @@ const statusStyle: Record<string, string> = {
 };
 ---
 
-<BaseLayout title={title} description={summary}>
+<BaseLayout title={title} description={summary} ogTitle={title} ogImage={cover ?? undefined}>
   <article>
-    <a href="/" class="text-sm text-zinc-500 hover:text-zinc-900">← 返回成果列表</a>
+    <a href="/" class="no-print text-sm text-zinc-500 hover:text-zinc-900">← 返回成果列表</a>
 
     <header class="mt-6">
       <div class="flex flex-wrap items-center gap-3">
