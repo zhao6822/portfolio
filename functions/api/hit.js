@@ -26,8 +26,14 @@ export async function onRequestGet({ env }) {
     const current = Number.parseInt(raw ?? '', 10);
     const base = Number.isFinite(current) ? current : START_FROM;
     const total = base + 1;
-    await env.COUNTER.put(KEY, String(total));
-    return json({ ok: true, total });
+    let persisted = true;
+    try {
+      await env.COUNTER.put(KEY, String(total));
+    } catch (writeError) {
+      // 免费版 KV 每天有写入次数上限，写不进去也照样把数字显示出来，只是不再增长
+      persisted = false;
+    }
+    return json({ ok: true, total, persisted });
   } catch (e) {
     return json({ ok: false, error: String(e?.message ?? e) }, 500);
   }
