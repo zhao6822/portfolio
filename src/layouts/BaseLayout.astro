@@ -51,6 +51,18 @@ const shareTitle = ogTitle ?? pageTitle;
     <meta name="twitter:title" content={shareTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
+
+    <!-- 访问统计：site.ts 里留空这段就不加载 -->
+    {
+      site.analyticsToken && (
+        <script
+          is:inline
+          type="module"
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon={`{"token": "${site.analyticsToken}"}`}
+        ></script>
+      )
+    }
   </head>
   <body class="bg-white text-zinc-900">
     <header class="no-print border-b border-zinc-200">
