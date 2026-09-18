@@ -5,10 +5,22 @@ import { site } from '../site';
 interface Props {
   title?: string;
   description?: string;
+  /** 分享卡片配图，默认用站点卡片图；项目详情页会传自己的封面 */
+  ogImage?: string;
+  /** 分享卡片上的标题，默认跟页面标题一致 */
+  ogTitle?: string;
 }
 
-const { title, description = site.description } = Astro.props;
+const { title, description = site.description, ogImage = '/og-default.png', ogTitle } = Astro.props;
 const pageTitle = title ? `${title} — ${site.name}` : `${site.name} — ${site.title}`;
+
+const siteUrl = (Astro.site ?? new URL('https://zhaopeng-portfolio.pages.dev')).href.replace(/\/$/, '');
+const canonical = `${siteUrl}${Astro.url.pathname}`.replace(/\/$/, '') || siteUrl;
+// 微信 / QQ 的分享卡片只认 jpg、png，svg 用不了 —— 碰到就换回站点默认卡片图
+const useDefaultImage = !/\.(jpe?g|png)$/i.test(ogImage);
+const shareImage = useDefaultImage ? '/og-default.png' : ogImage;
+const ogImageUrl = shareImage.startsWith('http') ? shareImage : `${siteUrl}${shareImage}`;
+const shareTitle = ogTitle ?? pageTitle;
 ---
 
 <!doctype html>
@@ -19,9 +31,29 @@ const pageTitle = title ? `${title} — ${site.name}` : `${site.name} — ${site
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href={canonical} />
+
+    <!-- 分享到微信 / QQ / 微博时显示的卡片 -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:title" content={shareTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImageUrl} />
+    {
+      useDefaultImage && (
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+      )
+    }
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={shareTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
   </head>
   <body class="bg-white text-zinc-900">
-    <header class="border-b border-zinc-200">
+    <header class="no-print border-b border-zinc-200">
       <div class="mx-auto flex max-w-5xl items-center justify-between px-5 py-4 sm:px-6 sm:py-5">
         <a href="/" class="text-base font-semibold tracking-tight text-ink-900 hover:text-ink-700">
           {site.name}
@@ -44,7 +76,7 @@ const pageTitle = title ? `${title} — ${site.name}` : `${site.name} — ${site
       <slot />
     </main>
 
-    <footer class="mt-14 border-t border-zinc-200">
+    <footer class="no-print mt-14 border-t border-zinc-200">
       <div
         class="mx-auto flex max-w-5xl flex-col gap-3 px-5 py-8 text-sm text-zinc-500 sm:flex-row sm:items-center sm:justify-between sm:px-6"
       >
