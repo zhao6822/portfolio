@@ -11,20 +11,91 @@
           ui-sans-serif, system-ui, -apple-system, 'PingFang SC',
           'Microsoft YaHei', sans-serif;
       }
+      .admin-fallback {
+        padding: 40px;
+        max-width: 520px;
+        margin: 60px auto;
+        line-height: 1.8;
+        color: #3f3f46;
+      }
+      .admin-fallback h2 {
+        font-size: 18px;
+        margin: 0 0 12px;
+      }
+      .admin-fallback button {
+        margin-top: 16px;
+        padding: 10px 18px;
+        font-size: 14px;
+        border: 0;
+        border-radius: 8px;
+        background: #2563eb;
+        color: #fff;
+        cursor: pointer;
+      }
     </style>
   </head>
   <body>
     <script>
       // 提前告知 Sveltia：我们手动初始化（ES module 里 document.currentScript 为 null，自动初始化不会触发）
       window.CMS_MANUAL_INIT = true;
-      // 注册 Service Worker：把 unpkg.com 的语言包/版本检查/chunks 请求改走本地文件
-      navigator.serviceWorker.register('./sw.js');
+      // 注册 Service Worker：把 unpkg.com / jsdelivr / api.github.com 的请求改走本地或本站代理
+      try {
+        navigator.serviceWorker.register('./sw.js');
+      } catch (e) {
+        console.warn('service worker 注册失败', e);
+      }
     </script>
     <script type="module">
-      // 等 Service Worker 接管页面后，再加载并手动初始化 Sveltia
-      await navigator.serviceWorker.ready;
-      const CMS = (await import('./sveltia-cms.mjs')).default;
-      CMS.init();
+      (async () => {
+        // 最多等 3 秒：无论 Service Worker 是否就绪，后台都要启动
+        try {
+          await Promise.race([
+            navigator.serviceWorker.ready,
+            new Promise((resolve) => setTimeout(resolve, 3000)),
+          ]);
+        } catch (e) {
+          console.warn('等待 service worker 超时或不可用', e);
+        }
+        try {
+          const CMS = (await import('./sveltia-cms.mjs')).default;
+          CMS.init();
+        } catch (e) {
+          console.error('后台初始化失败', e);
+        }
+      })();
+    </script>
+    <script>
+      // 兜底：8 秒后界面还没出来，就显示中文提示，不留白屏
+      setTimeout(function () {
+        if (document.querySelector('.app-shell')) return;
+        if (document.querySelector('.admin-fallback')) return;
+        document.body.insertAdjacentHTML(
+          'beforeend',
+          '<div class="admin-fallback">' +
+            '<h2>后台没能加载出来</h2>' +
+            '<p>通常是浏览器缓存了旧版本导致的。点下面的按钮强制重新加载一次即可。</p>' +
+            '<p style="color:#71717a;font-size:13px">如果反复出现，请把这个页面截图发给阿岩。</p>' +
+            '<button type="button" id="admin-hard-reload">强制重新加载</button>' +
+            '</div>',
+        );
+        document.getElementById('admin-hard-reload').addEventListener('click', function () {
+          var done = function () {
+            location.reload(true);
+          };
+          if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+            navigator.serviceWorker
+              .getRegistrations()
+              .then(function (regs) {
+                regs.forEach(function (r) {
+                  r.unregister();
+                });
+              })
+              .then(done, done);
+          } else {
+            done();
+          }
+        });
+      }, 8000);
     </script>
   </body>
 </html>
