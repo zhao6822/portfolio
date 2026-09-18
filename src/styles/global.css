@@ -96,10 +96,80 @@ body {
   margin: 1.25rem 0;
 }
 
+/* 深色主题：直接把 Tailwind 的色阶变量整体重映射，
+   这样组件里已经写好的 bg-white / text-zinc-900 不用改一个字，
+   加不加 html.dark 就能在深浅之间切换 */
+html.dark {
+  color-scheme: dark;
+
+  --color-white: #0b1210;
+  --color-black: #eef2f0;
+
+  --color-zinc-50: #0c1411;
+  --color-zinc-100: #141f1b;
+  --color-zinc-200: #22302a;
+  --color-zinc-300: #2f413a;
+  --color-zinc-400: #7d918a;
+  --color-zinc-500: #9bb0a8;
+  --color-zinc-600: #b3c5be;
+  --color-zinc-700: #cbdad4;
+  --color-zinc-800: #e1ece7;
+  --color-zinc-900: #f0f6f3;
+
+  --color-ink-50: #0e1c17;
+  --color-ink-100: #132920;
+  --color-ink-200: #1c3d2f;
+  --color-ink-300: #2a5b45;
+  --color-ink-400: #3f8365;
+  --color-ink-500: #5aa17e;
+  --color-ink-600: #7cc09b;
+  --color-ink-700: #a3d6ba;
+  --color-ink-800: #c8e8d7;
+  --color-ink-900: #e6f5ee;
+
+  --color-amber-50: #241a0b;
+  --color-amber-200: #6b4a18;
+  --color-amber-700: #f5c46a;
+}
+
 /* 打印 / 另存为 PDF：去掉导航、按钮和筛选区，只留下成果内容 */
 @media print {
   @page {
     margin: 14mm;
+  }
+
+  /* 打印一律按浅色来，免得深色背景印成一团黑 */
+  html.dark {
+    color-scheme: light;
+
+    --color-white: #ffffff;
+    --color-black: #000000;
+
+    --color-zinc-50: #fafafa;
+    --color-zinc-100: #f4f4f5;
+    --color-zinc-200: #e4e4e7;
+    --color-zinc-300: #d4d4d8;
+    --color-zinc-400: #a1a1aa;
+    --color-zinc-500: #71717a;
+    --color-zinc-600: #52525b;
+    --color-zinc-700: #3f3f46;
+    --color-zinc-800: #27272a;
+    --color-zinc-900: #18181b;
+
+    --color-ink-50: #f2f7f4;
+    --color-ink-100: #e2efe8;
+    --color-ink-200: #c6dfd2;
+    --color-ink-300: #9bc7af;
+    --color-ink-400: #66a584;
+    --color-ink-500: #3f8365;
+    --color-ink-600: #2c6b52;
+    --color-ink-700: #245a46;
+    --color-ink-800: #1e4a3b;
+    --color-ink-900: #14352a;
+
+    --color-amber-50: #fffbeb;
+    --color-amber-200: #fde68a;
+    --color-amber-700: #b45309;
   }
 
   .no-print {
@@ -138,4 +208,10 @@ body {
   article {
     break-inside: avoid;
   }
+}
+
+/* 主题切换按钮：深色下显示太阳（点了变浅色），浅色下显示月亮 */
+html.dark .icon-moon,
+html:not(.dark) .icon-sun {
+  display: none;
 }
