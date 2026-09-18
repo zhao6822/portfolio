@@ -51,8 +51,14 @@ const statusStyle: Record<string, string> = {
 
     {
       cover && (
-        <div class="mt-8 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50">
-          <img src={cover} alt={title} class="w-full object-cover" />
+        <div class="mt-8 overflow-hidden rounded-xl border border-zinc-200 bg-ink-50">
+          <img
+            src={cover}
+            alt={title}
+            fetchpriority="high"
+            decoding="async"
+            class="w-full object-cover"
+          />
         </div>
       )
     }
