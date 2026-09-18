@@ -6,19 +6,19 @@ period: 2026.03 – 2026.06
 role: 项目负责人
 status: 已交付
 tags:
-  - 产品
+  - '1231231'
   - 用户增长
-cover: /images/sample-1.svg
 metrics:
   - label: 会员续费率
-    value: '+18%'
+    value: +18%
   - label: 权益领取率
-    value: '41% → 67%'
+    value: 41% → 67%
   - label: 客诉量
-    value: '-32%'
+    value: -32%
 links:
   - name: 项目复盘文档
     url: https://example.com
+cover: /images/微信图片_20260815155856_2_77.jpg
 draft: false
 ---
 
