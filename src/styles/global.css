@@ -95,3 +95,47 @@ body {
   color: #52525b;
   margin: 1.25rem 0;
 }
+
+/* 打印 / 另存为 PDF：去掉导航、按钮和筛选区，只留下成果内容 */
+@media print {
+  @page {
+    margin: 14mm;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  main {
+    padding: 0 !important;
+    max-width: none !important;
+  }
+
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+
+  /* 纸面上看不到链接地址，把外链地址印出来 */
+  main a[href^='http']::after {
+    content: ' ⟨' attr(href) '⟩';
+    font-size: 10pt;
+    color: #52525b;
+    word-break: break-all;
+  }
+
+  img {
+    max-height: 90mm;
+    object-fit: contain;
+  }
+
+  section,
+  article {
+    break-inside: avoid;
+  }
+}
