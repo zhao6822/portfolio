@@ -22,42 +22,46 @@ const pageTitle = title ? `${title} — ${site.name}` : `${site.name} — ${site
   </head>
   <body class="bg-white text-zinc-900">
     <header class="border-b border-zinc-200">
-      <div
-        class="mx-auto flex max-w-5xl items-center justify-between px-6 py-5"
-      >
-        <a href="/" class="text-base font-semibold tracking-tight hover:opacity-70">
+      <div class="mx-auto flex max-w-5xl items-center justify-between px-5 py-4 sm:px-6 sm:py-5">
+        <a href="/" class="text-base font-semibold tracking-tight text-ink-900 hover:text-ink-700">
           {site.name}
         </a>
-        <nav class="flex items-center gap-6 text-sm text-zinc-600">
-          <a href="/" class="hover:text-zinc-900">成果</a>
-          <a href="/tags" class="hover:text-zinc-900">标签</a>
-          <a href="/about" class="hover:text-zinc-900">关于</a>
+        <nav class="flex items-center gap-4 text-sm text-zinc-600 sm:gap-6">
+          <a href="/" class="hover:text-ink-700">成果</a>
+          <a href="/tags" class="hover:text-ink-700">标签</a>
+          <a href="/search" class="hover:text-ink-700">搜索</a>
+          <a href="/about" class="hidden hover:text-ink-700 sm:inline">关于</a>
           <a
             href="/admin/"
-            class="rounded-md border border-zinc-300 px-3 py-1.5 hover:bg-zinc-50"
-            >后台</a
+            class="rounded-md bg-ink-800 px-3 py-1.5 text-white transition hover:bg-ink-900"
+            >记一笔</a
           >
         </nav>
       </div>
     </header>
 
-    <main class="mx-auto max-w-5xl px-6 py-12">
+    <main class="mx-auto max-w-5xl px-5 py-10 sm:px-6 sm:py-12">
       <slot />
     </main>
 
-    <footer class="mt-16 border-t border-zinc-200">
+    <footer class="mt-14 border-t border-zinc-200">
       <div
-        class="mx-auto flex max-w-5xl flex-col gap-2 px-6 py-8 text-sm text-zinc-500 sm:flex-row sm:items-center sm:justify-between"
+        class="mx-auto flex max-w-5xl flex-col gap-3 px-5 py-8 text-sm text-zinc-500 sm:flex-row sm:items-center sm:justify-between sm:px-6"
       >
-        <p>© {new Date().getFullYear()} {site.author}</p>
-        <div class="flex gap-4">
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <span>© {new Date().getFullYear()} {site.author}</span>
+          <a href={`mailto:${site.email}`} class="text-ink-700 hover:text-ink-900">{site.email}</a>
+        </div>
+        <div class="flex flex-wrap items-center gap-4">
           {
             site.links.map((l) => (
-              <a href={l.url} class="hover:text-zinc-900" target="_blank" rel="noopener">
+              <a href={l.url} class="hover:text-ink-700" target="_blank" rel="noopener">
                 {l.name}
               </a>
             ))
           }
+          <a href="/about" class="hover:text-ink-700 sm:hidden">关于</a>
+          <a href="/admin/" class="text-zinc-400 hover:text-ink-700">后台</a>
         </div>
       </div>
     </footer>
