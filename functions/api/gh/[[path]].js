@@ -40,7 +40,10 @@ export async function onRequest(context) {
     });
   }
 
-  const sub = url.pathname.replace(/^\/api\/gh/, '') || '/';
+  let sub = url.pathname.replace(/^\/api\/gh/, '') || '/';
+  // Sveltia 对自定义 api_root 会按 GitHub Enterprise 规则追加 /api/v3 前缀，剥掉
+  sub = sub.replace(/^\/api\/v3(?=\/|$)/, '');
+  if (sub === '') sub = '/';
   const target = `https://api.github.com${sub}${url.search}`;
 
   const headers = new Headers();
