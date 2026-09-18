@@ -12,18 +12,30 @@
           'Microsoft YaHei', sans-serif;
       }
       .admin-fallback {
-        padding: 40px;
-        max-width: 520px;
-        margin: 60px auto;
+        padding: 32px;
+        max-width: 560px;
+        margin: 48px auto;
         line-height: 1.8;
         color: #3f3f46;
+        border: 1px solid #e4e4e7;
+        border-radius: 12px;
       }
       .admin-fallback h2 {
         font-size: 18px;
         margin: 0 0 12px;
       }
+      .admin-fallback pre {
+        background: #f4f4f5;
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 12px;
+        white-space: pre-wrap;
+        word-break: break-all;
+        max-height: 220px;
+        overflow: auto;
+      }
       .admin-fallback button {
-        margin-top: 16px;
+        margin: 12px 8px 0 0;
         padding: 10px 18px;
         font-size: 14px;
         border: 0;
@@ -32,52 +44,93 @@
         color: #fff;
         cursor: pointer;
       }
+      .admin-fallback button.gray {
+        background: #52525b;
+      }
     </style>
   </head>
   <body>
     <script>
       // 提前告知 Sveltia：我们手动初始化（ES module 里 document.currentScript 为 null，自动初始化不会触发）
       window.CMS_MANUAL_INIT = true;
-      // 注册 Service Worker：把 unpkg.com / jsdelivr / api.github.com 的请求改走本地或本站代理
+      window.__adminDiag = { errors: [] };
+      window.addEventListener('error', function (e) {
+        window.__adminDiag.errors.push(String(e.message || e.type));
+      });
+      window.addEventListener('unhandledrejection', function (e) {
+        window.__adminDiag.errors.push('promise: ' + String(e.reason && e.reason.message ? e.reason.message : e.reason));
+      });
+      // 注册 Service Worker：把 unpkg / jsdelivr / api.github.com 的请求改走本地或本站代理
       try {
         navigator.serviceWorker.register('./sw.js');
       } catch (e) {
-        console.warn('service worker 注册失败', e);
+        window.__adminDiag.errors.push('sw-register: ' + String(e));
       }
     </script>
     <script type="module">
       (async () => {
+        var diag = window.__adminDiag;
         // 最多等 3 秒：无论 Service Worker 是否就绪，后台都要启动
         try {
           await Promise.race([
             navigator.serviceWorker.ready,
-            new Promise((resolve) => setTimeout(resolve, 3000)),
+            new Promise(function (r) {
+              setTimeout(r, 3000);
+            }),
           ]);
         } catch (e) {
-          console.warn('等待 service worker 超时或不可用', e);
+          diag.errors.push('sw-ready: ' + String(e));
         }
         try {
-          const CMS = (await import('./sveltia-cms.mjs')).default;
+          var CMS = (await import('./sveltia-cms.mjs')).default;
+          diag.moduleLoaded = true;
           CMS.init();
         } catch (e) {
-          console.error('后台初始化失败', e);
+          diag.errors.push('init: ' + String(e && e.message ? e.message : e));
         }
       })();
     </script>
     <script>
-      // 兜底：8 秒后界面还没出来，就显示中文提示，不留白屏
-      setTimeout(function () {
+      // 兜底：8 秒后界面还没出来，就显示诊断信息，不留白屏
+      setTimeout(async function () {
         if (document.querySelector('.app-shell')) return;
         if (document.querySelector('.admin-fallback')) return;
+
+        var diag = window.__adminDiag || {};
+        var lines = [];
+        lines.push('网络在线: ' + navigator.onLine);
+        lines.push('浏览器: ' + navigator.userAgent.slice(0, 90));
+        lines.push('小程序支持: ' + ('serviceWorker' in navigator));
+        try {
+          var regs = await navigator.serviceWorker.getRegistrations();
+          var reg = regs.find(function (r) {
+            return r.active;
+          });
+          lines.push('小程序状态: ' + (reg ? reg.active.state : '无'));
+        } catch (e) {
+          lines.push('小程序状态: 查询失败 ' + e);
+        }
+        try {
+          var resp = await fetch('./sveltia-cms.mjs', { headers: { range: 'bytes=0-99' } });
+          lines.push('主脚本可达: HTTP ' + resp.status);
+        } catch (e) {
+          lines.push('主脚本可达: 失败 ' + e);
+        }
+        lines.push('主脚本已执行: ' + (diag.moduleLoaded === true ? '是' : diag.moduleLoaded === undefined ? '未完成' : '否'));
+        lines.push('错误: ' + (diag.errors && diag.errors.length ? diag.errors.join(' | ') : '（无捕获到错误）'));
+        var report = lines.join('\n');
+
         document.body.insertAdjacentHTML(
           'beforeend',
           '<div class="admin-fallback">' +
             '<h2>后台没能加载出来</h2>' +
-            '<p>通常是浏览器缓存了旧版本导致的。点下面的按钮强制重新加载一次即可。</p>' +
-            '<p style="color:#71717a;font-size:13px">如果反复出现，请把这个页面截图发给阿岩。</p>' +
+            '<p>点「强制重新加载」先试一次；如果反复出现，请点「复制诊断信息」把内容粘贴给阿岩。</p>' +
+            '<pre id="admin-diag-text">' + report.replace(/</g, '&lt;') + '</pre>' +
             '<button type="button" id="admin-hard-reload">强制重新加载</button>' +
+            '<button type="button" class="gray" id="admin-copy-diag">复制诊断信息</button>' +
             '</div>',
         );
+
         document.getElementById('admin-hard-reload').addEventListener('click', function () {
           var done = function () {
             location.reload(true);
@@ -94,6 +147,20 @@
           } else {
             done();
           }
+        });
+        document.getElementById('admin-copy-diag').addEventListener('click', function () {
+          var text = document.getElementById('admin-diag-text').textContent;
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text);
+          } else {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            ta.remove();
+          }
+          this.textContent = '已复制';
         });
       }, 8000);
     </script>
