@@ -162,6 +162,15 @@
           }
           this.textContent = '已复制';
         });
+
+        // 界面若在提示卡出现之后才加载完成，自动撤掉提示卡
+        var watchdog = setInterval(function () {
+          if (document.querySelector('.app-shell')) {
+            var card = document.querySelector('.admin-fallback');
+            if (card) card.remove();
+            clearInterval(watchdog);
+          }
+        }, 1000);
       }, 8000);
     </script>
   </body>
