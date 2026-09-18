@@ -1,0 +1,25 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="页面不存在" description="你要找的页面不存在，可能已经改名或被删除了。">
+  <div class="py-16 text-center">
+    <p class="text-sm tracking-wide text-ink-600">404</p>
+    <h1 class="mt-3 text-2xl font-semibold tracking-tight">这个页面不存在</h1>
+    <p class="mx-auto mt-3 max-w-md text-sm leading-relaxed text-zinc-600">
+      可能是链接过期了，或者内容被改名。回首页看看全部成果，或者直接搜关键词。
+    </p>
+    <div class="mt-8 flex flex-wrap justify-center gap-3">
+      <a
+        href="/"
+        class="rounded-md bg-ink-800 px-4 py-2 text-sm text-white transition hover:bg-ink-900"
+        >回到首页</a
+      >
+      <a
+        href="/search"
+        class="rounded-md border border-zinc-300 px-4 py-2 text-sm text-zinc-700 transition hover:border-ink-300 hover:text-ink-700"
+        >搜索内容</a
+      >
+    </div>
+  </div>
+</BaseLayout>
