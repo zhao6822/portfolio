@@ -6,32 +6,52 @@ import { site } from '../site';
 <BaseLayout title="关于">
   <h1 class="text-2xl font-semibold tracking-tight">关于</h1>
 
-  <div class="prose-custom mt-6 max-w-2xl text-[15px] text-zinc-800">
-    {site.about.map((p) => <p>{p}</p>)}
-  </div>
+  {
+    site.about.length > 0 && (
+      <div class="prose-custom mt-6 max-w-2xl text-[15px] text-zinc-800">
+        {site.about.map((p) => <p>{p}</p>)}
+      </div>
+    )
+  }
 
-  <dl class="mt-10 border-t border-zinc-200 pt-6 text-sm">
-    <div class="flex gap-4 py-1.5">
-      <dt class="w-16 shrink-0 text-zinc-500">邮箱</dt>
-      <dd>
-        <a href={`mailto:${site.email}`} class="underline">{site.email}</a>
-      </dd>
+  <section class="mt-10 rounded-xl border border-zinc-200 p-6">
+    <h2 class="text-sm font-medium text-zinc-900">联系</h2>
+    <p class="mt-1 text-sm text-zinc-600">看项目有疑问，或者想聊聊合作，直接发邮件。</p>
+    <div class="mt-4 flex flex-wrap gap-3">
+      <a
+        href={`mailto:${site.email}`}
+        class="rounded-md bg-ink-800 px-4 py-2 text-sm text-white transition hover:bg-ink-900"
+        >{site.email}</a
+      >
+      {
+        site.resumeUrl && (
+          <a
+            href={site.resumeUrl}
+            target="_blank"
+            rel="noopener"
+            class="rounded-md border border-zinc-300 px-4 py-2 text-sm text-zinc-700 transition hover:border-ink-300 hover:text-ink-700"
+          >
+            下载简历 PDF
+          </a>
+        )
+      }
     </div>
-    {
-      site.links.map((l) => (
-        <div class="flex gap-4 py-1.5">
-          <dt class="w-16 shrink-0 text-zinc-500">{l.name}</dt>
-          <dd>
-            <a href={l.url} target="_blank" rel="noopener" class="underline">
-              {l.url}
-            </a>
-          </dd>
-        </div>
-      ))
-    }
-  </dl>
+  </section>
 
-  <p class="mt-10 text-xs text-zinc-400">
-    想改这些内容？编辑项目里的 <code class="rounded bg-zinc-100 px-1 py-0.5">src/site.ts</code> 文件。
-  </p>
+  {
+    site.links.length > 0 && (
+      <dl class="mt-10 border-t border-zinc-200 pt-6 text-sm">
+        {site.links.map((l) => (
+          <div class="flex gap-4 py-1.5">
+            <dt class="w-16 shrink-0 text-zinc-500">{l.name}</dt>
+            <dd>
+              <a href={l.url} target="_blank" rel="noopener" class="text-ink-700 underline">
+                {l.url}
+              </a>
+            </dd>
+          </div>
+        ))}
+      </dl>
+    )
+  }
 </BaseLayout>
