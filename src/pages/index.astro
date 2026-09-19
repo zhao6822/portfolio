@@ -1,8 +1,19 @@
 ---
+import { existsSync } from 'node:fs';
+import path from 'node:path';
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import { site } from '../site';
+
+// 头像在网页上只有 100px 出头，构建时生成过 400px 小图就优先用小图
+const avatarTiny = site.avatar ? site.avatar.replace(/\.(jpe?g|png)$/i, '-400.jpg') : '';
+const avatarSrc =
+  avatarTiny &&
+  avatarTiny !== site.avatar &&
+  existsSync(path.join(process.cwd(), 'public', avatarTiny.replace(/^\//, '')))
+    ? avatarTiny
+    : site.avatar;
 
 const all = await getCollection('projects');
 const projects = all
@@ -56,8 +67,10 @@ const yearText =
       {
         site.avatar && (
           <img
-            src={site.avatar}
+            src={avatarSrc}
             alt={site.author}
+            loading="eager"
+            decoding="async"
             class="h-20 w-20 shrink-0 rounded-full object-cover ring-1 ring-zinc-200 sm:h-24 sm:w-24"
           />
         )
