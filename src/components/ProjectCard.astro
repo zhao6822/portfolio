@@ -18,14 +18,12 @@ const statusStyle: Record<string, string> = {
   已归档: 'bg-zinc-100 text-zinc-600 border-zinc-200',
 };
 
-const firstChar = (title || '?').trim().charAt(0);
-
 // 后台删掉封面图后，条目里的封面地址会变成死链。这里构建时先确认文件还在，
-// 不在就直接显示占位图，免得页面上出现一张加载不出来的破图。
+// 没封面或图已经不在了，卡片就不留封面区，只保留顶部一条墨绿细线。
 const coverExists =
-  !cover ||
-  !cover.startsWith('/') ||
-  existsSync(path.join(process.cwd(), 'public', cover.replace(/^\//, '')));
+  !!cover &&
+  (!cover.startsWith('/') ||
+    existsSync(path.join(process.cwd(), 'public', cover.replace(/^\//, ''))));
 
 // 构建时如果生成了 800px 的小图，列表卡片就只加载小图（142KB 而不是 292KB）
 const smallCover = cover ? cover.replace(/\.(jpe?g|png)$/i, (ext) => `-800${ext}`) : '';
@@ -40,7 +38,7 @@ const hasSmall =
   class="group flex flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white transition hover:border-ink-300 hover:shadow-sm"
 >
   {
-    cover && coverExists ? (
+    coverExists ? (
       <div class="aspect-[16/9] w-full overflow-hidden bg-ink-50">
         <img
           src={hasSmall ? smallCover : cover}
@@ -54,11 +52,7 @@ const hasSmall =
         />
       </div>
     ) : (
-      <div
-        class="flex aspect-[16/9] w-full items-center justify-center bg-gradient-to-br from-[#1e4a3b] to-[#14352a]"
-      >
-        <span class="text-4xl font-semibold text-white/90">{firstChar}</span>
-      </div>
+      <div class="h-1 w-full bg-gradient-to-r from-ink-600 to-ink-400"></div>
     )
   }
 
