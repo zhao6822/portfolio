@@ -35,6 +35,8 @@ const exists = async (p) => {
 
 const SMALL_WIDTH = 800; // 列表卡片实际只显示 500px 左右，800 足够（含 1.5 倍屏）
 const SMALL_LIMIT = 150 * 1024;
+const TINY_WIDTH = 400; // 头像之类的小图，网页上最多也就显示 100 出头
+const TINY_LIMIT = 60 * 1024;
 
 /**
  * sharp 是 astro 的可选依赖，用 pnpm 安装时它藏在 astro 自己的依赖目录里，
@@ -164,6 +166,28 @@ for (const file of targets) {
     console.log(`[images] + ${smallName}: ${(smallBuf.length / 1024).toFixed(0)}KB（列表卡片用）`);
   } else if (await exists(smallPath)) {
     await unlink(smallPath);
+  }
+
+  // 再生成一张 400px 的小图给头像这类小尺寸显示用（网页上头像只有 100px 出头）
+  // 统一存成 jpg，比 png 小得多；前端找不到这张就自动用原图
+  const tinyName = file.replace(/\.(jpe?g|png)$/i, `-${TINY_WIDTH}.jpg`);
+  const tinyPath = path.join(IMG_DIR, tinyName);
+  if ((meta.width ?? 0) > TINY_WIDTH + 40) {
+    let q = 80;
+    let tinyBuf;
+    while (true) {
+      tinyBuf = await sharp(input, { failOn: 'none' })
+        .rotate()
+        .resize({ width: TINY_WIDTH, withoutEnlargement: true })
+        .jpeg({ quality: q, mozjpeg: true, progressive: true })
+        .toBuffer();
+      if (tinyBuf.length <= TINY_LIMIT || q <= MIN_QUALITY) break;
+      q -= 8;
+    }
+    await writeFile(tinyPath, tinyBuf);
+    console.log(`[images] + ${tinyName}: ${(tinyBuf.length / 1024).toFixed(0)}KB（头像等小图用）`);
+  } else if (await exists(tinyPath)) {
+    await unlink(tinyPath);
   }
 }
 
