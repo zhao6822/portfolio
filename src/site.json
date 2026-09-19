@@ -1,14 +1,21 @@
 {
-  "name": "赵鹏 · 作品集",
-  "title": "工作成果记录",
-  "description": "赵鹏的工作成果记录。",
-  "author": "赵鹏",
-  "intro": "把做过的项目，记成看得见的成果。",
+  "name": "测试测试",
+  "title": "记录",
+  "description": "记录。",
+  "author": "abc",
+  "intro": "无限进步",
   "keywords": [],
-  "avatar": "",
+  "avatar": "/images/u1255199142_22_--chaos_100_--ar_34_--profile_v4ik884_46klrg3__edb28e3b-eb7d-4c10-a388-8d775c9878fa_1.png",
   "resumeUrl": "",
-  "about": [],
+  "about": [
+    "123123"
+  ],
   "email": "zhaopeng6822@qq.com",
-  "analyticsToken": "4703ff56134b4c1f9eb5177ba1ebbe55",
-  "links": []
+  "links": [
+    {
+      "name": "百度",
+      "url": "https://pan.baidu.com/s/1N4KUvRFB7TARCrscZ2dtSg?pwd=n7gm"
+    }
+  ],
+  "analyticsToken": "4703ff56134b4c1f9eb5177ba1ebbe55"
 }
