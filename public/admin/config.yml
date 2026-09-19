@@ -112,3 +112,82 @@ collections:
         name: body
         widget: markdown
         hint: 建议按「背景 / 我做了什么 / 结果与复盘」三段写
+
+  - name: settings
+    label: 站点信息
+    files:
+      - name: site
+        label: 基本信息
+        file: src/site.json
+        format: json
+        fields:
+          - label: 网站名
+            name: name
+            widget: string
+            hint: 显示在浏览器标签页和页面左上角
+          - label: 副标题
+            name: title
+            widget: string
+          - label: 搜索结果简介
+            name: description
+            widget: text
+            hint: 别人搜到你名字时，搜索引擎显示的那一小段话
+          - label: 你的名字
+            name: author
+            widget: string
+          - label: 一句话定位
+            name: intro
+            widget: text
+            hint: 首屏最显眼的那句话。建议写「方向 + 擅长」，例：微短剧后期，从剪辑到调色能独立跑完一条片
+          - label: 能力关键词
+            name: keywords
+            widget: list
+            required: false
+            hint: 显示在名字下面的一排小标签，例：微短剧后期
+            field:
+              label: 一个关键词
+              name: keyword
+              widget: string
+          - label: 头像 / 职业照
+            name: avatar
+            widget: image
+            required: false
+            hint: 上传后地址会自动填好，留空则不显示。建议正方形
+          - label: 简历 PDF
+            name: resumeUrl
+            widget: file
+            required: false
+            hint: 上传 PDF 后，首页底部会出现「下载简历 PDF」按钮
+          - label: 关于页正文
+            name: about
+            widget: list
+            required: false
+            hint: 一段一条，写你的经历和做事方式
+            field:
+              label: 一段话
+              name: paragraph
+              widget: text
+          - label: 联系邮箱
+            name: email
+            widget: string
+          - label: 外部链接
+            name: links
+            widget: list
+            required: false
+            hint: 显示在页脚，例：B站主页、样片网盘
+            field:
+              label: 一个链接
+              name: link
+              widget: object
+              fields:
+                - label: 名称
+                  name: name
+                  widget: string
+                - label: 地址
+                  name: url
+                  widget: string
+          - label: 访问统计编号
+            name: analyticsToken
+            widget: string
+            required: false
+            hint: 用来统计有多少人看过你的作品集，一般不用动
