@@ -1,4 +1,6 @@
 ---
+import { existsSync } from 'node:fs';
+import path from 'node:path';
 import { getCollection, render } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
@@ -27,9 +29,20 @@ const statusStyle: Record<string, string> = {
   已交付: 'bg-ink-50 text-ink-700 border-ink-200',
   已归档: 'bg-zinc-100 text-zinc-600 border-zinc-200',
 };
+
+// 图在后台被删掉后这里会变成死链，构建时先确认文件还在，不在就不显示封面区
+const coverExists =
+  !!cover &&
+  (!cover.startsWith('/') ||
+    existsSync(path.join(process.cwd(), 'public', cover.replace(/^\//, ''))));
 ---
 
-<BaseLayout title={title} description={summary} ogTitle={title} ogImage={cover ?? undefined}>
+<BaseLayout
+  title={title}
+  description={summary}
+  ogTitle={title}
+  ogImage={coverExists ? cover : undefined}
+>
   <article>
     <a href="/" class="no-print text-sm text-zinc-500 hover:text-zinc-900">← 返回成果列表</a>
 
@@ -50,7 +63,7 @@ const statusStyle: Record<string, string> = {
     </header>
 
     {
-      cover && (
+      coverExists && (
         <div class="mt-8 overflow-hidden rounded-xl border border-zinc-200 bg-ink-50">
           <img
             src={cover}
